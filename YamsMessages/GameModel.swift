@@ -38,6 +38,14 @@ final class GameModel: ObservableObject {
         onExpand?()
     }
 
+#if DEBUG
+    /// Test en solo (builds Debug uniquement) : prendre la place de l'autre joueur.
+    func swapSides() {
+        guard let game else { return }
+        show(game, me: other)
+    }
+#endif
+
     func roll() {
         guard let game, isMyTurn, turn.rollsLeft > 0 else { return }
         turn.roll(in: game)

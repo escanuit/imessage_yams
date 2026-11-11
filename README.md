@@ -43,6 +43,13 @@ remplacer `NSExtensionMainStoryboard` par
 3. Le coup se place dans le champ de saisie : appuie sur la flèche d'envoi.
 4. L'autre touche la bulle, joue, envoie. 12 manches chacun.
 
+## Tester tout seul
+
+Lancée depuis Xcode (build *Debug*), l'app affiche un bouton **Mode test : jouer l’autre côté**
+quand ce n'est pas ton tour : il te fait passer dans la peau de l'adversaire, pour dérouler une
+partie entière sur un seul téléphone ou dans le simulateur. Le bouton n'existe pas dans les
+builds *Release* (archive, TestFlight).
+
 ## Règles
 
 | Case | Points |

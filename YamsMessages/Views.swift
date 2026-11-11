@@ -156,6 +156,10 @@ private struct GameView: View {
             VStack(spacing: 4) {
                 Text("Au tour de l’adversaire").font(.headline)
                 Text("Envoie le message pour lui passer la main.").font(.subheadline).foregroundColor(.secondary)
+                #if DEBUG
+                Button("Mode test : jouer l’autre côté") { model.swapSides() }
+                    .font(.footnote).padding(.top, 6)
+                #endif
             }
             .frame(maxWidth: .infinity)
         }
