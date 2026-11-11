@@ -81,8 +81,8 @@ tr.total td { font-weight: 800; font-size: 18px; border-bottom: 0; }
 const CATS = [
   ['As', 'total des 1'], ['Deux', 'total des 2'], ['Trois', 'total des 3'],
   ['Quatre', 'total des 4'], ['Cinq', 'total des 5'], ['Six', 'total des 6'],
-  ['Brelan', 'somme'], ['Carré', 'somme'], ['Full', '25'],
-  ['Petite suite', '30'], ['Grande suite', '40'], ['Yams', '50'], ['Chance', 'somme'],
+  ['Brelan', 'somme'], ['Carré', '40'], ['Full', '30'],
+  ['Petite suite', '12345 : 25'], ['Grande suite', '23456 : 25'], ['Yams', '50'],
 ];
 const TURNS = CATS.length * 2;
 const $app = document.getElementById('app');
@@ -93,16 +93,15 @@ function score(cat, d) {
   let sum = 0;
   for (const v of d) { n[v]++; sum += v; }
   const max = Math.max(...n);
-  const run = len => [1, 2, 3].some(s => s + len <= 7 && n.slice(s, s + len).every(x => x > 0));
+  const run = start => n.slice(start, start + 5).every(x => x === 1);
   if (cat < 6) return n[cat + 1] * (cat + 1);
   switch (cat) {
     case 6: return max >= 3 ? sum : 0;
-    case 7: return max >= 4 ? sum : 0;
-    case 8: return n.includes(3) && n.includes(2) ? 25 : 0;
-    case 9: return run(4) ? 30 : 0;
-    case 10: return run(5) ? 40 : 0;
-    case 11: return max === 5 ? 50 : 0;
-    default: return sum;
+    case 7: return max >= 4 ? 40 : 0;
+    case 8: return n.includes(3) && n.includes(2) ? 30 : 0;
+    case 9: return run(1) ? 25 : 0;
+    case 10: return run(2) ? 25 : 0;
+    default: return max === 5 ? 50 : 0;
   }
 }
 function totals(col) {
@@ -300,7 +299,7 @@ function render(animated) {
       <tbody>
         ${[0, 1, 2, 3, 4, 5].map(row).join('')}
         ${line('sub', 'Bonus <small>si ≥ 63 : +35</small>', t => t.bonus ? '+35' : `${t.upper}/63`)}
-        ${[6, 7, 8, 9, 10, 11, 12].map(row).join('')}
+        ${[6, 7, 8, 9, 10, 11].map(row).join('')}
         ${line('total', 'Total', t => t.total)}
       </tbody></table></div>
     <button class="ghost" data-act="home" style="color:#fff;opacity:.7">Nouvelle partie</button>`;

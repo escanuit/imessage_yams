@@ -1,26 +1,27 @@
 import Foundation
 
-/// Les 13 cases de la feuille de score.
+/// Les 12 cases de la feuille de score (règles maison : pas de Chance).
 enum Category: Int, CaseIterable, Identifiable {
     case aces, twos, threes, fours, fives, sixes
-    case threeOfAKind, fourOfAKind, fullHouse, smallStraight, largeStraight, yams, chance
+    case threeOfAKind, fourOfAKind, fullHouse, smallStraight, largeStraight, yams
 
     var id: Int { rawValue }
     static let upper: [Category] = [.aces, .twos, .threes, .fours, .fives, .sixes]
-    static let lower: [Category] = [.threeOfAKind, .fourOfAKind, .fullHouse, .smallStraight, .largeStraight, .yams, .chance]
+    static let lower: [Category] = [.threeOfAKind, .fourOfAKind, .fullHouse, .smallStraight, .largeStraight, .yams]
 
     var name: String {
         ["As", "Deux", "Trois", "Quatre", "Cinq", "Six",
-         "Brelan", "Carré", "Full", "Petite suite", "Grande suite", "Yams", "Chance"][rawValue]
+         "Brelan", "Carré", "Full", "Petite suite", "Grande suite", "Yams"][rawValue]
     }
 
     var hint: String {
         switch self {
         case .aces, .twos, .threes, .fours, .fives, .sixes: return "total des \(rawValue + 1)"
-        case .threeOfAKind, .fourOfAKind, .chance: return "somme"
-        case .fullHouse: return "25"
-        case .smallStraight: return "30"
-        case .largeStraight: return "40"
+        case .threeOfAKind: return "somme"
+        case .fourOfAKind: return "40"
+        case .fullHouse: return "30"
+        case .smallStraight: return "1-2-3-4-5 : 25"
+        case .largeStraight: return "2-3-4-5-6 : 25"
         case .yams: return "50"
         }
     }
@@ -32,22 +33,20 @@ enum Category: Int, CaseIterable, Identifiable {
         let sum = dice.reduce(0, +)
         let most = counts.max() ?? 0
 
-        func hasRun(_ length: Int) -> Bool {
-            (1...(7 - length)).contains { start in
-                (start..<(start + length)).allSatisfy { counts[$0] > 0 }
-            }
+        /// Les cinq dés forment exactement la suite commençant à `start`.
+        func isRun(from start: Int) -> Bool {
+            (start..<(start + 5)).allSatisfy { counts[$0] == 1 }
         }
 
         switch self {
         case .aces, .twos, .threes, .fours, .fives, .sixes:
             return counts[rawValue + 1] * (rawValue + 1)
         case .threeOfAKind: return most >= 3 ? sum : 0
-        case .fourOfAKind: return most >= 4 ? sum : 0
-        case .fullHouse: return counts.contains(3) && counts.contains(2) ? 25 : 0
-        case .smallStraight: return hasRun(4) ? 30 : 0
-        case .largeStraight: return hasRun(5) ? 40 : 0
+        case .fourOfAKind: return most >= 4 ? 40 : 0
+        case .fullHouse: return counts.contains(3) && counts.contains(2) ? 30 : 0
+        case .smallStraight: return isRun(from: 1) ? 25 : 0
+        case .largeStraight: return isRun(from: 2) ? 25 : 0
         case .yams: return most == 5 ? 50 : 0
-        case .chance: return sum
         }
     }
 }
@@ -69,7 +68,7 @@ struct Game: Equatable {
     var seed: UInt32
     /// `scores[joueur][case]`, `nil` tant que la case est libre.
     var scores: [[Int?]]
-    /// Nombre de tours déjà joués (0...26).
+    /// Nombre de tours déjà joués (0...24).
     var turn: Int
     /// Joueur qui a commencé.
     var first: Int
@@ -86,7 +85,7 @@ struct Game: Equatable {
 
     var currentPlayer: Int { (first + turn) % 2 }
     var isOver: Bool { turn >= Game.turnCount }
-    /// Numéro de manche affiché (1...13).
+    /// Numéro de manche affiché (1...12).
     var round: Int { min(turn / 2 + 1, Category.allCases.count) }
 
     func upperTotal(_ player: Int) -> Int {

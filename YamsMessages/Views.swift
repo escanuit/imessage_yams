@@ -277,8 +277,8 @@ private struct ScoreCard: View {
     @ViewBuilder
     private func row(_ category: Category) -> some View {
         HStack {
-            Text(category.name)
-            Text(category.hint).font(.caption).foregroundColor(.secondary)
+            Text(category.name).lineLimit(1).layoutPriority(1)
+            Text(category.hint).font(.caption).foregroundColor(.secondary).lineLimit(1).minimumScaleFactor(0.7)
             Spacer()
             myCell(category)
             scoreText(game.scores[model.other][category.rawValue], player: model.other, category: category)

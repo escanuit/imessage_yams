@@ -41,7 +41,7 @@ remplacer `NSExtensionMainStoryboard` par
 1. Dans la conversation, ouvre Yams depuis le tiroir d'apps → **Nouvelle partie**.
 2. Lance les dés (3 lancers max), touche ceux que tu gardes, puis choisis une case et valide.
 3. Le coup se place dans le champ de saisie : appuie sur la flèche d'envoi.
-4. L'autre touche la bulle, joue, envoie. 13 manches chacun.
+4. L'autre touche la bulle, joue, envoie. 12 manches chacun.
 
 ## Règles
 
@@ -49,14 +49,16 @@ remplacer `NSExtensionMainStoryboard` par
 | --- | --- |
 | As → Six | total des dés de la valeur |
 | Bonus | +35 si le haut atteint 63 |
-| Brelan / Carré | somme des 5 dés |
-| Full | 25 |
-| Petite suite (4 dés) | 30 |
-| Grande suite (5 dés) | 40 |
+| Brelan | somme des 5 dés |
+| Carré | 40 |
+| Full | 30 |
+| Petite suite (1-2-3-4-5) | 25 |
+| Grande suite (2-3-4-5-6) | 25 |
 | Yams | 50 |
-| Chance | somme des 5 dés |
 
-Le barème est dans `YamsMessages/Game.swift` (`Category.score`) si vous jouez avec d'autres règles maison.
+Règles maison : pas de case Chance, donc 12 manches chacun.
+
+Le barème est dans `YamsMessages/Game.swift` (`Category.score`) pour l'ajuster.
 
 ## Anti-triche (léger)
 
