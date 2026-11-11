@@ -1,0 +1,64 @@
+name: Publier sur TestFlight
+
+# Lancement manuel : onglet Actions → « Publier sur TestFlight » → Run workflow.
+# Secrets requis (Settings → Secrets and variables → Actions) :
+#   APPLE_TEAM_ID, ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY_P8 — voir PUBLIER.md.
+on:
+  workflow_dispatch:
+
+jobs:
+  testflight:
+    runs-on: macos-15
+    env:
+      TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Vérification des secrets
+        run: |
+          for name in TEAM_ID ASC_KEY_ID ASC_ISSUER_ID ASC_KEY_P8; do
+            if [ -z "${!name}" ]; then echo "::error::Secret manquant : $name (voir PUBLIER.md)"; exit 1; fi
+          done
+      - name: Tests de la logique de jeu
+        run: swiftc YamsMessages/Game.swift Tests/main.swift -o yams-tests && ./yams-tests
+      - name: Génération du projet Xcode
+        run: brew install xcodegen && xcodegen
+      - name: Clé App Store Connect
+        run: |
+          mkdir -p "$RUNNER_TEMP/keys"
+          printf '%s\n' "$ASC_KEY_P8" > "$RUNNER_TEMP/keys/AuthKey.p8"
+      - name: Archive
+        run: >
+          xcodebuild archive -project Yams.xcodeproj -scheme Yams
+          -destination 'generic/platform=iOS'
+          -archivePath "$RUNNER_TEMP/Yams.xcarchive"
+          DEVELOPMENT_TEAM="$TEAM_ID"
+          CURRENT_PROJECT_VERSION="${{ github.run_number }}"
+          CODE_SIGNING_ALLOWED=NO
+      - name: Signature et envoi à App Store Connect
+        run: |
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>destination</key><string>upload</string>
+            <key>teamID</key><string>$TEAM_ID</string>
+            <key>signingStyle</key><string>automatic</string>
+          </dict>
+          </plist>
+          PLIST
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/Yams.xcarchive" \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" \
+            -exportPath "$RUNNER_TEMP/export" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$RUNNER_TEMP/keys/AuthKey.p8" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+      - name: Nettoyage de la clé
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/keys"

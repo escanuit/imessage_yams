@@ -17,3 +17,9 @@ jobs:
           xcodebuild -project Yams.xcodeproj -scheme Yams
           -destination 'generic/platform=iOS Simulator'
           CODE_SIGNING_ALLOWED=NO build
+      - name: Archive Release non signée (ce que la publication envoie)
+        run: >
+          xcodebuild archive -project Yams.xcodeproj -scheme Yams
+          -destination 'generic/platform=iOS'
+          -archivePath "$RUNNER_TEMP/Yams.xcarchive"
+          CODE_SIGNING_ALLOWED=NO

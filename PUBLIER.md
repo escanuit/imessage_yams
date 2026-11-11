@@ -3,6 +3,30 @@
 Tout se fait depuis ton Mac, avec ton compte développeur. Les étapes 1 à 4 suffisent pour
 jouer à deux via TestFlight ; l'étape 5 est seulement pour l'App Store public.
 
+## Voie rapide : envoi automatique depuis GitHub
+
+Le workflow **Publier sur TestFlight** archive, signe et envoie l'app sans passer par Xcode.
+À préparer une seule fois :
+
+1. Crée la fiche de l'app (étape 2 ci-dessous) : Apple ne permet pas de le faire automatiquement.
+2. Sur App Store Connect → *Utilisateurs et accès* → *Intégrations* → *Clés API App Store Connect* :
+   génère une clé avec le rôle **Admin** (nécessaire pour la signature gérée par Apple) et
+   télécharge le fichier `.p8`.
+3. Dans le dépôt GitHub → *Settings* → *Secrets and variables* → *Actions*, ajoute quatre secrets :
+
+   | Secret | Valeur |
+   | --- | --- |
+   | `APPLE_TEAM_ID` | ton identifiant d'équipe (10 caractères) |
+   | `ASC_KEY_ID` | l'identifiant de la clé |
+   | `ASC_ISSUER_ID` | l'*Issuer ID* affiché au-dessus de la liste des clés |
+   | `ASC_KEY_P8` | le contenu complet du fichier `.p8` |
+
+4. Onglet *Actions* → **Publier sur TestFlight** → *Run workflow*.
+
+Le numéro de build augmente tout seul à chaque lancement. Ensuite, passe à l'étape 4 (TestFlight).
+
+La voie manuelle par Xcode reste décrite ci-dessous.
+
 ## 1. Signature
 
 Dans `project.yml`, mets ton identifiant d'équipe dans `DEVELOPMENT_TEAM`, puis relance `xcodegen`.
