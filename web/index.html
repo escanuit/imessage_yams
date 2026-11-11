@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Yams</title>
+<meta property="og:title" content="🎲 Yams — à toi de jouer !">
+<meta property="og:description" content="Ouvre le lien pour jouer ton tour.">
+<meta name="theme-color" content="#14532d">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎲</text></svg>">
+<style>
+:root {
+  --bg: #14532d; --bg2: #166534; --card: #fffdf7; --ink: #1c1917; --muted: #78716c;
+  --line: #e7e5e4; --accent: #dc2626; --accent-ink: #fff; --hint: #a8a29e; --pick: #fef3c7;
+  --die: #fff; --pip: #1c1917; --held: #f59e0b;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0c2416; --bg2: #123420; --card: #1c1917; --ink: #f5f5f4; --muted: #a8a29e;
+    --line: #3f3a36; --hint: #78716c; --pick: #4a3b12; --die: #f5f5f4;
+  }
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html { background: var(--bg); }
+html, body { margin: 0; }
+body {
+  font: 16px/1.35 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: linear-gradient(var(--bg2), var(--bg)) fixed; color: var(--ink);
+  min-height: 100dvh; padding: env(safe-area-inset-top) 12px calc(env(safe-area-inset-bottom) + 16px);
+}
+#app { max-width: 460px; margin: 0 auto; }
+h1 { color: #fff; text-align: center; font-size: 22px; margin: 14px 0 10px; letter-spacing: .5px; }
+.card { background: var(--card); border-radius: 16px; padding: 14px; margin-bottom: 12px; box-shadow: 0 4px 14px rgba(0,0,0,.25); }
+.status { text-align: center; font-weight: 600; }
+.status small { display: block; font-weight: 400; color: var(--muted); margin-top: 2px; }
+button {
+  font: inherit; font-weight: 600; border: 0; border-radius: 12px; padding: 13px 16px; width: 100%;
+  background: var(--accent); color: var(--accent-ink); cursor: pointer; touch-action: manipulation;
+}
+button:disabled { opacity: .4; }
+button.ghost { background: transparent; color: var(--muted); font-weight: 500; padding: 8px; }
+button.alt { background: #2563eb; }
+button + button, .dice + button { margin-top: 10px; }
+label { display: block; font-size: 13px; color: var(--muted); margin: 10px 0 4px; }
+input { font: inherit; width: 100%; padding: 11px 12px; border-radius: 10px; border: 1px solid var(--line); background: transparent; color: var(--ink); }
+
+.dice { display: grid; grid-template-columns: repeat(5, minmax(0, 68px)); justify-content: space-between; gap: 8px; }
+.die {
+  min-width: 0; aspect-ratio: 1; background: var(--die); border-radius: 22%; padding: 14%;
+  display: grid; grid-template: repeat(3, minmax(0, 1fr)) / repeat(3, minmax(0, 1fr)); place-items: center;
+  border: 3px solid transparent;
+  box-shadow: 0 2px 5px rgba(0,0,0,.3); transition: transform .12s; cursor: pointer;
+}
+.die.held { border-color: var(--held); transform: translateY(8px); }
+.die.empty { opacity: .35; }
+.die.roll { animation: shake .4s; }
+@keyframes shake { 25% { transform: rotate(-18deg) scale(.9); } 60% { transform: rotate(14deg) scale(1.05); } }
+.pip { width: 78%; aspect-ratio: 1; border-radius: 50%; background: var(--pip); visibility: hidden; }
+.pip.on { visibility: visible; }
+.hint { text-align: center; font-size: 13px; color: var(--muted); margin: 12px 0 0; min-height: 18px; }
+
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th, td { padding: 9px 6px; border-bottom: 1px solid var(--line); text-align: center; }
+th:first-child, td:first-child { text-align: left; }
+thead th { font-size: 13px; color: var(--muted); font-weight: 600; max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+thead th.turn { color: var(--accent); }
+td small { color: var(--muted); font-size: 11px; margin-left: 4px; }
+td.opt { color: var(--hint); cursor: pointer; }
+td.opt.zero { opacity: .6; }
+td.sel { background: var(--pick); color: var(--ink); font-weight: 700; border-radius: 8px; }
+td.last { color: var(--accent); font-weight: 700; }
+tr.sub td { font-weight: 600; background: rgba(120,113,108,.08); }
+tr.total td { font-weight: 800; font-size: 18px; border-bottom: 0; }
+.win { font-size: 20px; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+'use strict';
+const CATS = [
+  ['As', 'total des 1'], ['Deux', 'total des 2'], ['Trois', 'total des 3'],
+  ['Quatre', 'total des 4'], ['Cinq', 'total des 5'], ['Six', 'total des 6'],
+  ['Brelan', 'somme'], ['Carré', 'somme'], ['Full', '25'],
+  ['Petite suite', '30'], ['Grande suite', '40'], ['Yams', '50'], ['Chance', 'somme'],
+];
+const TURNS = CATS.length * 2;
+const $app = document.getElementById('app');
+
+/* ---------- règles ---------- */
+function score(cat, d) {
+  const n = [0, 0, 0, 0, 0, 0, 0];
+  let sum = 0;
+  for (const v of d) { n[v]++; sum += v; }
+  const max = Math.max(...n);
+  const run = len => [1, 2, 3].some(s => s + len <= 7 && n.slice(s, s + len).every(x => x > 0));
+  if (cat < 6) return n[cat + 1] * (cat + 1);
+  switch (cat) {
+    case 6: return max >= 3 ? sum : 0;
+    case 7: return max >= 4 ? sum : 0;
+    case 8: return n.includes(3) && n.includes(2) ? 25 : 0;
+    case 9: return run(4) ? 30 : 0;
+    case 10: return run(5) ? 40 : 0;
+    case 11: return max === 5 ? 50 : 0;
+    default: return sum;
+  }
+}
+function totals(col) {
+  const upper = col.slice(0, 6).reduce((a, v) => a + (v || 0), 0);
+  const bonus = upper >= 63 ? 35 : 0;
+  const lower = col.slice(6).reduce((a, v) => a + (v || 0), 0);
+  return { upper, bonus, total: upper + bonus + lower };
+}
+// Dés déterministes : rouvrir le lien ne change pas le tirage.
+function rnd(seed, turn, roll, die) {
+  let h = seed ^ Math.imul(turn + 1, 0x9E3779B1) ^ Math.imul(roll + 1, 0x85EBCA6B) ^ Math.imul(die + 1, 0xC2B2AE35);
+  h = Math.imul(h ^ (h >>> 16), 0x85EBCA6B);
+  h = Math.imul(h ^ (h >>> 13), 0xC2B2AE35);
+  h ^= h >>> 16;
+  return (h >>> 0) % 6 + 1;
+}
+
+/* ---------- état & stockage ---------- */
+const store = {
+  get(k) { try { return JSON.parse(localStorage.getItem('yams:' + k)); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem('yams:' + k, JSON.stringify(v)); } catch (e) {} },
+};
+function encode(s) {
+  const bytes = new TextEncoder().encode(JSON.stringify(s));
+  let bin = ''; for (const b of bytes) bin += String.fromCharCode(b);
+  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function decode(str) {
+  try {
+    const bin = atob(str.replace(/-/g, '+').replace(/_/g, '/'));
+    const s = JSON.parse(new TextDecoder().decode(Uint8Array.from(bin, c => c.charCodeAt(0))));
+    const ok = s && typeof s.g === 'string' && Array.isArray(s.n) && s.n.length === 2 &&
+      Array.isArray(s.c) && s.c.length === 2 && s.c.every(c => Array.isArray(c) && c.length === CATS.length) &&
+      Number.isInteger(s.t) && s.t >= 0 && s.t <= TURNS;
+    return ok ? s : null;
+  } catch (e) { return null; }
+}
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+let S = null;      // partie : {g, s, n:[noms], c:[[..],[..]], t, f, l}
+let me = 0;        // mon index de joueur sur cet appareil
+let T = null;      // tour en cours : {d, h, r}
+let sel = null;    // case sélectionnée
+let rolling = false;
+
+const current = () => (S.f + S.t) % 2;
+const over = () => S.t >= TURNS;
+const gameUrl = () => location.origin + location.pathname + '#' + encode(S);
+
+function newGame(names, first, myIndex) {
+  S = {
+    g: Math.random().toString(36).slice(2, 10), s: (Math.random() * 2 ** 32) >>> 0,
+    n: names, c: [Array(CATS.length).fill(null), Array(CATS.length).fill(null)], t: 0, f: first, l: null,
+  };
+  store.set('me:' + S.g, myIndex);
+  open(S);
+}
+function open(state) {
+  const saved = store.get('game:' + state.g);
+  S = saved && saved.t > state.t ? saved : state;   // jamais revenir en arrière
+  const known = store.get('me:' + S.g);
+  me = known === 0 || known === 1 ? known : current(); // on reçoit un lien quand c'est notre tour
+  store.set('me:' + S.g, me);
+  T = store.get('turn:' + S.g + ':' + S.t) || { d: [0, 0, 0, 0, 0], h: [false, false, false, false, false], r: 0 };
+  sel = null;
+  persist();
+  render();
+}
+function persist() {
+  store.set('game:' + S.g, S);
+  store.set('last', S.g);
+  history.replaceState(null, '', '#' + encode(S));
+}
+function load() {
+  const s = decode(location.hash.slice(1));
+  if (s) open(s); else { S = null; render(); }
+}
+
+/* ---------- actions ---------- */
+function roll() {
+  if (rolling || T.r >= 3 || over() || current() !== me) return;
+  T.r++;
+  const moved = [];
+  T.d = T.d.map((v, i) => (T.h[i] && T.r > 1) ? v : (moved.push(i), rnd(S.s, S.t, T.r, i)));
+  if (T.r === 3) T.h = T.h.map(() => false);
+  sel = null;
+  store.set('turn:' + S.g + ':' + S.t, T);
+  rolling = true;
+  render(moved);
+  setTimeout(() => { rolling = false; render(); }, 420);
+}
+function confirmScore() {
+  if (sel === null || T.r === 0) return;
+  const v = score(sel, T.d);
+  S.c[me][sel] = v;
+  S.l = [me, sel, v];
+  S.t++;
+  T = { d: [0, 0, 0, 0, 0], h: [false, false, false, false, false], r: 0 };
+  sel = null;
+  persist();
+  render();
+  window.scrollTo(0, 0);
+}
+function shareText() {
+  const a = totals(S.c[me]).total, b = totals(S.c[1 - me]).total;
+  if (over()) return `🎲 Yams terminé ! ${S.n[me]} ${a} – ${b} ${S.n[1 - me]}`;
+  if (S.l) return `🎲 Yams — ${S.n[S.l[0]]} : ${S.l[2]} pts en ${CATS[S.l[1]][0]} (${a}–${b}). À toi de jouer !`;
+  return `🎲 Yams — nouvelle partie, à toi de commencer !`;
+}
+async function send() {
+  const text = shareText(), url = gameUrl();
+  if (navigator.share) {
+    try { await navigator.share({ text, url }); } catch (e) { /* annulé */ }
+  } else {
+    location.href = 'sms:&body=' + encodeURIComponent(text + ' ' + url);
+  }
+}
+async function copy(btn) {
+  try { await navigator.clipboard.writeText(gameUrl()); btn.textContent = 'Lien copié ✓'; }
+  catch (e) { prompt('Copie ce lien :', gameUrl()); }
+}
+
+/* ---------- affichage ---------- */
+const PIPS = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
+function dieHtml(v, i, held, anim) {
+  let pips = '';
+  for (let k = 0; k < 9; k++) pips += `<span class="pip${v && PIPS[v].includes(k) ? ' on' : ''}"></span>`;
+  return `<div class="die${held ? ' held' : ''}${v ? '' : ' empty'}${anim ? ' roll' : ''}" data-die="${i}" role="button" aria-label="Dé ${i + 1} : ${v || 'non lancé'}${held ? ', gardé' : ''}">${pips}</div>`;
+}
+
+function renderHome() {
+  const names = store.get('names') || ['', ''];
+  const last = store.get('last');
+  const lastGame = last && store.get('game:' + last);
+  $app.innerHTML = `
+    <h1>🎲 Yams</h1>
+    <div class="card">
+      <label for="n0">Ton prénom</label><input id="n0" maxlength="14" value="${esc(names[0])}" autocomplete="given-name">
+      <label for="n1">Son prénom</label><input id="n1" maxlength="14" value="${esc(names[1])}" style="margin-bottom:14px">
+      <button data-act="new">Nouvelle partie</button>
+      ${lastGame ? `<button class="ghost" data-act="resume">Reprendre la partie en cours</button>` : ''}
+    </div>
+    <div class="card" style="font-size:14px;color:var(--muted)">
+      Joue ton tour, puis envoie le lien par iMessage. L’autre l’ouvre, joue, et te le renvoie.
+    </div>`;
+}
+
+function render(animated) {
+  if (!S) return renderHome();
+  const cur = current(), mine = !over() && cur === me, other = 1 - me;
+  const tot = [totals(S.c[0]), totals(S.c[1])];
+  const canPick = mine && T.r > 0 && !rolling;
+
+  let top;
+  if (over()) {
+    const a = tot[me].total, b = tot[other].total;
+    const msg = a === b ? 'Égalité ! 🤝' : a > b ? 'Tu as gagné ! 🏆' : `${esc(S.n[other])} a gagné 🏆`;
+    top = `<div class="card"><div class="status win">${msg}<small>${a} – ${b}</small></div>
+      <button data-act="send" style="margin-top:12px">Envoyer le résultat 💬</button>
+      <button class="alt" data-act="rematch">Revanche</button></div>`;
+  } else if (!mine) {
+    const lastMine = S.l && S.l[0] === me;
+    top = `<div class="card"><div class="status">Au tour de ${esc(S.n[other])}
+      <small>${lastMine ? `Tu as marqué ${S.l[2]} en ${CATS[S.l[1]][0]}.` : ''} Envoie-lui le lien pour continuer.</small></div>
+      <button data-act="send" style="margin-top:12px">Envoyer à ${esc(S.n[other])} 💬</button>
+      <button class="ghost" data-act="copy">Copier le lien</button></div>`;
+  } else {
+    const left = 3 - T.r;
+    const theirs = S.l && S.l[0] === other ? `${esc(S.n[other])} a marqué ${S.l[2]} en ${CATS[S.l[1]][0]}.` : `Tour ${Math.floor(S.t / 2) + 1} sur ${CATS.length}`;
+    const hint = T.r === 0 ? '' : left > 0 ? 'Touche les dés à garder, ou choisis une case.' : 'Choisis une case dans ta colonne.';
+    const action = sel !== null
+      ? `<button data-act="confirm">Marquer ${score(sel, T.d)} en ${CATS[sel][0]}</button>`
+      : `<button data-act="roll" ${left === 0 || rolling ? 'disabled' : ''}>${T.r === 0 ? 'Lancer les dés' : left ? `Relancer (${left} restant${left > 1 ? 's' : ''})` : 'Plus de lancer'}</button>`;
+    top = `<div class="card"><div class="status" style="margin-bottom:12px">À toi de jouer, ${esc(S.n[me])} !<small>${theirs}</small></div>
+      <div class="dice">${T.d.map((v, i) => dieHtml(v, i, T.h[i], animated && animated.includes(i))).join('')}</div>
+      ${action}<p class="hint">${hint}</p></div>`;
+  }
+
+  const cell = (p, c) => {
+    const v = S.c[p][c];
+    if (v !== null) return `<td class="${S.l && S.l[0] === p && S.l[1] === c ? 'last' : ''}">${v}</td>`;
+    if (p === me && canPick) {
+      const pv = score(c, T.d);
+      return `<td class="opt${pv ? '' : ' zero'}${sel === c ? ' sel' : ''}" data-cat="${c}" role="button">${pv}</td>`;
+    }
+    return '<td></td>';
+  };
+  const row = (c) => `<tr><td>${CATS[c][0]}<small>${CATS[c][1]}</small></td>${cell(me, c)}${cell(other, c)}</tr>`;
+  const line = (cls, label, f) => `<tr class="${cls}"><td>${label}</td><td>${f(tot[me])}</td><td>${f(tot[other])}</td></tr>`;
+  const head = p => `<th class="${!over() && cur === p ? 'turn' : ''}">${p === me ? 'Moi' : esc(S.n[p])}</th>`;
+
+  $app.innerHTML = `<h1>🎲 Yams</h1>${top}
+    <div class="card"><table>
+      <thead><tr><th></th>${head(me)}${head(other)}</tr></thead>
+      <tbody>
+        ${[0, 1, 2, 3, 4, 5].map(row).join('')}
+        ${line('sub', 'Bonus <small>si ≥ 63 : +35</small>', t => t.bonus ? '+35' : `${t.upper}/63`)}
+        ${[6, 7, 8, 9, 10, 11, 12].map(row).join('')}
+        ${line('total', 'Total', t => t.total)}
+      </tbody></table></div>
+    <button class="ghost" data-act="home" style="color:#fff;opacity:.7">Nouvelle partie</button>`;
+}
+
+$app.addEventListener('click', e => {
+  const die = e.target.closest('[data-die]');
+  if (die && S && current() === me && T.r > 0 && T.r < 3 && !rolling) {
+    const i = +die.dataset.die;
+    T.h[i] = !T.h[i];
+    store.set('turn:' + S.g + ':' + S.t, T);
+    return render();
+  }
+  const cat = e.target.closest('[data-cat]');
+  if (cat) { const c = +cat.dataset.cat; sel = sel === c ? null : c; return render(); }
+  const btn = e.target.closest('[data-act]');
+  if (!btn) return;
+  switch (btn.dataset.act) {
+    case 'roll': return roll();
+    case 'confirm': return confirmScore();
+    case 'send': return send();
+    case 'copy': return copy(btn);
+    case 'rematch': return newGame(S.n, 1 - S.f, me);
+    case 'resume': { const g = store.get('game:' + store.get('last')); if (g) open(g); return; }
+    case 'home': history.replaceState(null, '', location.pathname); S = null; return render();
+    case 'new': {
+      const names = [document.getElementById('n0').value.trim() || 'Moi', document.getElementById('n1').value.trim() || 'Toi'];
+      store.set('names', names);
+      return newGame(names, 0, 0);
+    }
+  }
+});
+window.addEventListener('hashchange', load);
+load();
+</script>
+</body>
+</html>

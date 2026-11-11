@@ -1,0 +1,57 @@
+# Projet Xcode généré par XcodeGen : `brew install xcodegen && xcodegen`
+name: Yams
+options:
+  bundleIdPrefix: com.escanuit
+  deploymentTarget:
+    iOS: "16.0"
+  developmentLanguage: fr
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    CODE_SIGN_STYLE: Automatic
+    TARGETED_DEVICE_FAMILY: "1"
+    ASSETCATALOG_COMPILER_APPICON_NAME: iMessage App Icon
+targets:
+  # Coquille obligatoire : une app iMessage n'a pas d'icône sur l'écran d'accueil.
+  Yams:
+    type: application.messages
+    platform: iOS
+    sources:
+      - Shared
+    info:
+      path: Yams/Info.plist
+      properties:
+        CFBundleDisplayName: Yams
+        LSApplicationLaunchProhibited: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.escanuit.yams
+    dependencies:
+      - target: YamsMessages
+  # L'extension qui s'affiche dans Messages.
+  YamsMessages:
+    type: app-extension.messages
+    platform: iOS
+    sources:
+      - YamsMessages
+      - Shared
+    info:
+      path: YamsMessages/Info.plist
+      properties:
+        CFBundleDisplayName: Yams
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.message-payload-provider
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).MessagesViewController
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.escanuit.yams.MessagesExtension
+schemes:
+  Yams:
+    build:
+      targets:
+        Yams: all
+        YamsMessages: all
+    run:
+      config: Debug

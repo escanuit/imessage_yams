@@ -1,0 +1,7 @@
+.DS_Store
+# Générés par XcodeGen à partir de project.yml
+*.xcodeproj
+Yams/Info.plist
+YamsMessages/Info.plist
+xcuserdata/
+DerivedData/

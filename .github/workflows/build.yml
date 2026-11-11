@@ -1,0 +1,21 @@
+name: Build
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tests de la logique de jeu
+        run: swiftc YamsMessages/Game.swift Tests/main.swift -o yams-tests && ./yams-tests
+      - name: Génération du projet Xcode
+        run: brew install xcodegen && xcodegen
+      - name: Compilation pour le simulateur
+        run: >
+          xcodebuild -project Yams.xcodeproj -scheme Yams
+          -destination 'generic/platform=iOS Simulator'
+          CODE_SIGNING_ALLOWED=NO build
