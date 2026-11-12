@@ -48,6 +48,11 @@ final class MessagesViewController: MSMessagesAppViewController {
         load(message, in: conversation)
     }
 
+    override func didStartSending(_ message: MSMessage, conversation: MSConversation) {
+        super.didStartSending(message, conversation: conversation)
+        model.moveSent = true
+    }
+
     override func willTransition(to presentationStyle: MSMessagesAppPresentationStyle) {
         super.willTransition(to: presentationStyle)
         model.isCompact = presentationStyle == .compact
@@ -69,16 +74,17 @@ final class MessagesViewController: MSMessagesAppViewController {
         let sentByMe = message.senderParticipantIdentifier == conversation.localParticipantIdentifier
         let sender = game.last?.player ?? (1 - game.currentPlayer)
         model.show(game, me: sentByMe ? sender : 1 - sender)
+        // Une bulle de la conversation est déjà partie.
+        model.moveSent = true
     }
 
     private func send(_ game: Game, dice: [Int]) {
         guard let conversation = activeConversation, let move = game.last else { return }
 
-        // `$<identifiant>` est remplacé par le prénom du contact dans la bulle.
-        let me = "$\(conversation.localParticipantIdentifier.uuidString)"
         let layout = MSMessageTemplateLayout()
         layout.image = BubbleImage.render(dice: dice, game: game)
-        layout.caption = "\(me) : \(move.value) pts en \(move.category.name)"
+        // Pas d'identifiant de participant : iOS n'y substitue plus le prénom.
+        layout.caption = "\(move.value) pts en \(move.category.name)"
         layout.trailingCaption = "\(game.total(move.player)) – \(game.total(1 - move.player))"
         if game.isOver {
             layout.subcaption = game.winner == nil ? "Partie terminée : égalité !" : "Partie terminée 🏆"

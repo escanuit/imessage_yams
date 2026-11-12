@@ -10,6 +10,8 @@ final class GameModel: ObservableObject {
     @Published var turn = TurnState()
     @Published var selected: Category?
     @Published var isCompact = true
+    /// Le coup joué a été envoyé (flèche d'envoi touchée).
+    @Published var moveSent = false
 
     /// Appelé quand un coup vient d'être joué : (partie mise à jour, dés du coup).
     var onSend: ((Game, [Int]) -> Void)?
@@ -28,6 +30,7 @@ final class GameModel: ObservableObject {
     func show(_ game: Game?, me: Int) {
         self.game = game
         self.me = me
+        moveSent = false
         selected = nil
         turn = game.map { TurnState.load(for: $0) } ?? TurnState()
     }
@@ -71,6 +74,7 @@ final class GameModel: ObservableObject {
         self.game = game
         selected = nil
         turn = TurnState()
+        moveSent = false
         onSend?(game, dice)
     }
 }

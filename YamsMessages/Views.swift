@@ -87,7 +87,8 @@ private struct CompactView: View {
 
     private func statusLine(_ game: Game) -> String {
         if game.isOver { return "Partie terminée" }
-        return model.isMyTurn ? "À toi de jouer !" : "Coup prêt : appuie sur la flèche d’envoi ↑"
+        if model.isMyTurn { return "À toi de jouer !" }
+        return model.moveSent ? "Coup envoyé : au tour de l’adversaire" : "Coup prêt : appuie sur la flèche d’envoi ↑"
     }
 }
 
