@@ -29,13 +29,14 @@ jobs:
         run: |
           mkdir -p "$RUNNER_TEMP/keys"
           printf '%s\n' "$ASC_KEY_P8" > "$RUNNER_TEMP/keys/AuthKey.p8"
+      # Le build 1 a été envoyé à la main depuis un Mac le 12/11 : on décale d'un cran.
       - name: Archive
         run: >
           xcodebuild archive -project Yams.xcodeproj -scheme Yams
           -destination 'generic/platform=iOS'
           -archivePath "$RUNNER_TEMP/Yams.xcarchive"
           DEVELOPMENT_TEAM="$TEAM_ID"
-          CURRENT_PROJECT_VERSION="${{ github.run_number }}"
+          CURRENT_PROJECT_VERSION="$(( ${{ github.run_number }} + 1 ))"
           CODE_SIGNING_ALLOWED=NO
       - name: Signature et envoi à App Store Connect
         run: |
