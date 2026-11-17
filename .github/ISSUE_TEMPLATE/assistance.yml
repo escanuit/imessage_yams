@@ -1,0 +1,22 @@
+name: Demande d'assistance
+description: Un problème, une question ou une idée sur Yams à deux
+title: "[Assistance] "
+labels: ["assistance"]
+body:
+  - type: textarea
+    id: probleme
+    attributes:
+      label: Que se passe-t-il ?
+      description: Décrivez le problème ou votre question.
+    validations:
+      required: true
+  - type: input
+    id: appareil
+    attributes:
+      label: Appareil et version d'iOS
+      placeholder: "ex. iPhone 15, iOS 26.1"
+  - type: textarea
+    id: captures
+    attributes:
+      label: Captures d'écran (facultatif)
+      description: Glissez une image ici. Ne mettez pas de numéro de téléphone ni de nom de contact visibles.

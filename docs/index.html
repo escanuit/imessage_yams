@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Yams à deux · Assistance</title>
+<meta name="description" content="Assistance de Yams à deux : questions fréquentes, règles et contact.">
+<meta name="theme-color" content="#14532d">
+<link rel="icon" href="icone.png">
+<link rel="apple-touch-icon" href="icone.png">
+<style>
+:root {
+  --bg: #f5f3ee; --card: #fffdf7; --ink: #1c1917; --muted: #57534e; --line: #e7e5e4;
+  --brand: #14532d; --brand2: #166534; --accent: #dc2626; --on-brand: #fff;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #0f1a13; --card: #1c1917; --ink: #f5f5f4; --muted: #a8a29e; --line: #3f3a36; --accent: #f87171; }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { font: 17px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--ink); }
+header { background: linear-gradient(var(--brand2), var(--brand)); color: var(--on-brand); padding: 40px 16px 32px; text-align: center; }
+header img { width: 96px; height: 96px; border-radius: 22px; box-shadow: 0 6px 20px rgba(0,0,0,.25); }
+header h1 { margin: 14px 0 4px; font-size: 30px; }
+header p { margin: 0; opacity: .9; }
+nav { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 18px; }
+nav a { color: var(--on-brand); text-decoration: none; border: 1px solid rgba(255,255,255,.4); border-radius: 999px; padding: 6px 14px; font-size: 15px; }
+main { max-width: 720px; margin: 0 auto; padding: 8px 16px 48px; }
+h2 { font-size: 22px; margin: 36px 0 12px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; }
+details { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 18px; margin: 10px 0; }
+summary { cursor: pointer; font-weight: 600; }
+details p, details ol, details ul { margin: 10px 0 0; color: var(--muted); }
+.btn { display: inline-block; background: var(--brand); color: var(--on-brand); text-decoration: none; font-weight: 600; padding: 12px 20px; border-radius: 12px; margin: 6px 0; }
+@media (prefers-color-scheme: dark) { .btn { background: #22c55e; color: #052e16; } }
+.muted { color: var(--muted); }
+table { width: 100%; border-collapse: collapse; font-size: 15px; }
+td { padding: 6px 4px; border-bottom: 1px solid var(--line); vertical-align: top; }
+td:last-child { text-align: right; white-space: nowrap; color: var(--muted); }
+footer { text-align: center; color: var(--muted); font-size: 14px; padding: 24px 16px 40px; }
+footer a { color: inherit; }
+</style>
+</head>
+<body>
+<header>
+  <img src="icone.png" alt="Icône de Yams à deux">
+  <h1>Yams à deux</h1>
+  <p>Assistance et questions fréquentes</p>
+  <nav>
+    <a href="#contact">Contact</a>
+    <a href="#faq">Questions fréquentes</a>
+    <a href="#regles">Règles</a>
+    <a href="confidentialite.html">Confidentialité</a>
+  </nav>
+</header>
+
+<main>
+  <h2 id="contact">Nous contacter</h2>
+  <div class="card">
+    <p>Un bug, une question ou une idée ? Écrivez-nous, nous répondons en général sous 48 heures (en français ou en anglais).</p>
+    <!-- CONTACT-EMAIL -->
+    <p><a class="btn" href="https://github.com/escanuit/imessage_yams/issues/new?template=assistance.yml">Envoyer une demande d'assistance</a></p>
+    <p class="muted">Pour une demande d'assistance, indiquez votre modèle d'iPhone ou d'iPad, la version d'iOS et ce qui se passe. Une capture d'écran aide beaucoup.</p>
+  </div>
+
+  <h2 id="faq">Questions fréquentes</h2>
+
+  <details open>
+    <summary>Je ne trouve pas Yams sur mon écran d'accueil</summary>
+    <p>C'est normal : Yams est une app pour Messages, elle n'a pas d'icône sur l'écran d'accueil. Pour l'ouvrir :</p>
+    <ol>
+      <li>Ouvrez l'app Messages et une conversation.</li>
+      <li>Touchez le bouton <strong>+</strong> à gauche du champ de texte, puis <strong>Plus</strong>.</li>
+      <li>Choisissez <strong>Yams</strong> dans la liste. Vous pouvez le faire glisser plus haut pour l'avoir sous la main.</li>
+    </ol>
+  </details>
+
+  <details>
+    <summary>Comment lancer une partie ?</summary>
+    <ol>
+      <li>Dans Yams, touchez <strong>Nouvelle partie</strong>.</li>
+      <li>Lancez les dés (jusqu'à trois lancers), touchez les dés que vous voulez garder.</li>
+      <li>Choisissez votre case sur la feuille de score et validez.</li>
+      <li>Votre coup apparaît dans le champ de message sous forme de bulle : envoyez-la.</li>
+    </ol>
+    <p>Votre partenaire touche la bulle pour jouer son tour, quand il le souhaite.</p>
+  </details>
+
+  <details>
+    <summary>Mon ou ma partenaire doit-il aussi avoir l'app ?</summary>
+    <p>Oui. Les deux joueurs doivent installer Yams à deux (gratuit) depuis l'App Store. Sans l'app, la bulle s'affiche mais ne peut pas être jouée.</p>
+  </details>
+
+  <details>
+    <summary>La bulle ne s'ouvre pas, ou mon coup n'arrive pas</summary>
+    <ul>
+      <li>Vérifiez que la conversation passe bien par iMessage (bulles bleues) et non par SMS (bulles vertes) : les apps pour Messages ne fonctionnent pas en SMS.</li>
+      <li>Vérifiez que vous avez tous les deux la dernière version de Yams à deux dans l'App Store.</li>
+      <li>Si la bulle reste figée, fermez puis rouvrez la conversation et touchez à nouveau la dernière bulle.</li>
+    </ul>
+    <p>Toujours bloqué ? <a href="#contact">Contactez-nous</a>.</p>
+  </details>
+
+  <details>
+    <summary>Peut-on jouer à plus de deux ?</summary>
+    <p>Non, Yams à deux se joue en tête-à-tête : un joueur de chaque côté de la conversation, 12 manches chacun.</p>
+  </details>
+
+  <details>
+    <summary>Faut-il créer un compte ? Y a-t-il des achats ou de la publicité ?</summary>
+    <p>Non. Pas de compte, pas de publicité, pas d'achat intégré : l'app est entièrement gratuite.</p>
+  </details>
+
+  <details>
+    <summary>Que devient ma partie ? Mes données sont-elles collectées ?</summary>
+    <p>Aucune donnée n'est collectée. Toute la partie voyage dans les messages que vous envoyez vous-même ; le tour en cours est gardé uniquement sur votre appareil. Détails dans la <a href="confidentialite.html">politique de confidentialité</a>.</p>
+  </details>
+
+  <h2 id="regles">Règles et score</h2>
+  <div class="card">
+    <p>À chaque tour : jusqu'à trois lancers de cinq dés, puis une case à remplir parmi les 12 de la feuille. Chaque case ne sert qu'une fois. Après 12 manches chacun, le plus haut total gagne.</p>
+    <table>
+      <tr><td>As, Deux, Trois, Quatre, Cinq, Six</td><td>somme des dés de cette valeur</td></tr>
+      <tr><td>Bonus si le haut de la feuille atteint 63</td><td>+35</td></tr>
+      <tr><td>Brelan (3 dés identiques)</td><td>somme des 5 dés</td></tr>
+      <tr><td>Carré (4 dés identiques)</td><td>40</td></tr>
+      <tr><td>Full (3 + 2)</td><td>30</td></tr>
+      <tr><td>Petite suite (1-2-3-4-5)</td><td>25</td></tr>
+      <tr><td>Grande suite (2-3-4-5-6)</td><td>25</td></tr>
+      <tr><td>Yams (5 dés identiques)</td><td>50</td></tr>
+    </table>
+  </div>
+</main>
+
+<footer>
+  Yams à deux · © 2026 Maxence Pereira · <a href="confidentialite.html">Confidentialité</a>
+</footer>
+</body>
+</html>
